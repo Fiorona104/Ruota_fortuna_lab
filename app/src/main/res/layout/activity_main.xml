@@ -1,54 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+
+<!-- ScrollView per evitare che i contenuti escano dallo schermo -->
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp">
+    android:background="#FFF3E0">
 
-    <TextView
-        android:id="@+id/titolo"
-        android:layout_width="wrap_content"
+    <!-- contenitore principale della schermata -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="LUCKY WHEEL"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="20dp"/>
+        android:paddingBottom="40dp">
 
-    <TextView
-        android:id="@+id/stato"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pronto"
-        android:layout_marginBottom="10dp"/>
+        <!-- titolo dell'app -->
 
-    <ImageView
-        android:id="@+id/ruota"
-        android:layout_width="220dp"
-        android:layout_height="220dp"
-        android:src="@drawable/ruota"
-        android:layout_marginBottom="20dp"/>
+        <!-- ruota personalizzata -->
 
-    <TextView
-        android:id="@+id/risultato"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Premi Gira"
-        android:textSize="18sp"
-        android:layout_marginBottom="20dp"/>
+        <!-- testo risultato vincitore -->
+        <TextView
+            android:id="@+id/titolo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="92dp"
+            android:text="LUCKY WHEEL"
+            android:textColor="#F40F00"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/gira"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="GIRA"/>
+        <com.example.ruota_fortuna.RuotaView
+            android:id="@+id/ruota"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_marginTop="44dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.495"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titolo" />
 
-    <Button
-        android:id="@+id/reset"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="RESET"
-        android:layout_marginTop="10dp"/>
+        <TextView
+            android:id="@+id/risultato"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Premi Gira"
+            android:textSize="18sp"
+            android:textColor="#000000"
+            app:layout_constraintTop_toBottomOf="@id/ruota"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"/>
 
-</LinearLayout>
+        <!-- bottone per far girare la ruota -->
+        <Button
+            android:id="@+id/gira"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="GIRA"
+            android:backgroundTint="#FF9800"
+            android:textColor="#FFFFFF"
+            app:layout_constraintTop_toBottomOf="@id/risultato"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"/>
+
+        <!-- bottone reset che riporta tutto allo stato iniziale -->
+        <Button
+            android:id="@+id/reset"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="RESET"
+            android:backgroundTint="#607D8B"
+            android:textColor="#FFFFFF"
+            app:layout_constraintTop_toBottomOf="@id/gira"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="15dp"/>
+
+        <!-- testo che mostra lo storico dei vincitori -->
+        <TextView
+            android:id="@+id/storico"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Storico:"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            app:layout_constraintTop_toBottomOf="@id/reset"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
