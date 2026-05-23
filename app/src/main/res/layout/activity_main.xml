@@ -9,24 +9,6 @@
     android:background="#FFF3E0">
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <!-- titolo app -->
     <TextView
         android:id="@+id/titolo"
