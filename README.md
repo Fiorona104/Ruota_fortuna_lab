@@ -1,4 +1,3 @@
-                                                                    LUCKY HELL
 
 INTRODUZIONE
 
