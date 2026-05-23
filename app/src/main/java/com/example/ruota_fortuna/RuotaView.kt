@@ -13,7 +13,7 @@ import kotlin.math.min           // Restituisce il valore minimo, per il raggio 
 import kotlin.math.sin           // Calcola il seno, per coordinate circolari
 
 // Classe che disegna una ruota sullo schermo
-class RuotaView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
+class RuotaView1(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     // Lista dei nomi da inserire nei segmenti della ruota
     var nomi = mutableListOf("Luca", "Marco", "Giulia", "Sara", "Andrea", "Matteo")
