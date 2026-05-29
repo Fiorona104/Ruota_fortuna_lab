@@ -1,78 +1,206 @@
-package com.example.ruota_fortuna
+package com.example.ruota_fortuna // nome del pacchetto del progetto
 
-import android.content.Context   // Permette di accedere alle risorse del sistema Android
-import android.graphics.Canvas   // Usato per disegnare elementi grafici sullo schermo
-import android.graphics.Color    // Contiene i colori predefiniti e la gestione dei colori
-import android.graphics.Paint    // Serve per definire stile, colore e proprietà del disegno
-import android.util.AttributeSet // Permette di usare la View anche da XML
-import android.view.View         // Classe base per creare componenti grafici personalizzati
+import android.animation.ObjectAnimator // serve per animazioni (coriandoli che cadono)
+import android.graphics.Color // gestione colori casuali
+import android.media.MediaPlayer // gestione audio (suoni)
+import android.os.Bundle // ciclo di vita dell'Activity
+import android.view.animation.DecelerateInterpolator // rallenta la rotazione alla fine
+import android.widget.Button // pulsanti UI
+import android.widget.FrameLayout // contenitore principale (per coriandoli)
+import android.widget.TextView // testi a schermo
+import androidx.appcompat.app.AppCompatActivity // classe base Activity Android
+import kotlin.math.floor // serve per calcolare indice vincitore
+import kotlin.random.Random // genera numeri casuali
 
-import kotlin.math.cos           // Calcola il coseno, per coordinate circolari
-import kotlin.math.min           // Restituisce il valore minimo, per il raggio della ruota
-import kotlin.math.sin           // Calcola il seno, per coordinate circolari
+// Activity principale dell'app
+class MainActivity : AppCompatActivity() {
 
-// Classe che disegna una ruota sullo schermo
-class RuotaView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
+    // riferimento alla ruota grafica
+    private lateinit var ruota: RuotaView
 
-    // Lista dei nomi da inserire nei segmenti della ruota
-    var nomi = mutableListOf("Luca", "Marco", "Giulia", "Sara", "Andrea", "Matteo")
+    // testo che mostra il vincitore
+    private lateinit var risultato: TextView
 
-    // Paint principale per colorare i segmenti
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    // testo che mostra lo storico vincitori
+    private lateinit var storicoView: TextView
 
-    // Paint per il testo dei nomi
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
-        textSize = 40f
-        textAlign = Paint.Align.CENTER
+    // bottone per far girare la ruota
+    private lateinit var gira: Button
+
+    // bottone per resettare il gioco
+    private lateinit var reset: Button
+
+    // suono iniziale (sigla)
+    private lateinit var siglaSound: MediaPlayer
+
+    // suono durante rotazione
+    private lateinit var giraSound: MediaPlayer
+
+    // suono quando esce il risultato
+    private lateinit var risultatoSound: MediaPlayer
+
+    // angolo totale della rotazione
+    private var angolo = 0f
+
+    // lista iniziale dei partecipanti
+    private val listaIniziale = mutableListOf(
+        "Luca", "Marco", "Giulia", "Sara", "Andrea", "Matteo"
+    )
+
+    // lista che salva lo storico dei vincitori
+    private val storico = mutableListOf<String>()
+
+    // metodo chiamato quando l'app si avvia
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState) // inizializza Activity
+        setContentView(R.layout.activity_main) // collega layout XML
+
+        // collega la ruota dal layout
+        ruota = findViewById(R.id.ruota)
+
+        // collega il testo del risultato
+        risultato = findViewById(R.id.risultato)
+
+        // collega il testo dello storico
+        storicoView = findViewById(R.id.storico)
+
+        // collega bottone GIRA
+        gira = findViewById(R.id.gira)
+
+        // collega bottone RESET
+        reset = findViewById(R.id.reset)
+
+        // carica suono iniziale
+        siglaSound = MediaPlayer.create(this, R.raw.sigla)
+        siglaSound.start() // avvia suono
+
+        // quando premi il bottone GIRA
+        gira.setOnClickListener {
+
+            // se non ci sono nomi, non fa nulla
+            if (ruota.nomi.isEmpty()) return@setOnClickListener
+
+            // crea e avvia suono rotazione
+            giraSound = MediaPlayer.create(this, R.raw.gira)
+            giraSound.start()
+
+            // genera numero casuale di giri completi
+            val giri = Random.nextInt(5, 8)
+
+            // aggiunge un angolo casuale finale
+            val extra = Random.nextInt(0, 360)
+
+            // aggiorna angolo totale della ruota
+            angolo += (giri * 360) + extra
+
+            // avvia animazione della rotazione
+            ruota.animate()
+                .rotation(angolo) // ruota fino al nuovo angolo
+                .setDuration(2500) // durata animazione
+                .setInterpolator(DecelerateInterpolator()) // rallenta alla fine
+                .withEndAction { // quando finisce animazione
+
+                    // ferma suono rotazione
+                    if (giraSound.isPlaying) {
+                        giraSound.stop()
+                    }
+
+                    // calcola chi ha vinto
+                    val vincitore = calcolaVincitore()
+
+                    // mostra risultato a schermo
+                    risultato.text = "Ha vinto: $vincitore"
+
+                    // suono vittoria
+                    risultatoSound = MediaPlayer.create(this, R.raw.risultato)
+                    risultatoSound.start()
+
+                    // aggiunge vincitore allo storico
+                    storico.add(vincitore)
+
+                    // aggiorna testo storico
+                    storicoView.text = "Storico: " + storico.joinToString(" → ")
+
+                    // rimuove il vincitore dalla ruota
+                    ruota.nomi.remove(vincitore)
+
+                    // ridisegna la ruota
+                    ruota.invalidate()
+
+                    // mostra coriandoli
+                    showCoriandoli()
+                }
+        }
+
+        // quando premi RESET
+        reset.setOnClickListener {
+
+            angolo = 0f // reset angolo ruota
+
+            ruota.nomi = listaIniziale.toMutableList() // ripristina nomi
+
+            ruota.rotation = 0f // reset grafica rotazione
+            ruota.invalidate() // ridisegna ruota
+
+            risultato.text = "Premi Gira" // reset testo risultato
+
+            storico.clear() // svuota storico
+            storicoView.text = "Storico:" // reset testo
+        }
     }
 
-    // Metodo principale che disegna la ruota
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+    // funzione che calcola il vincitore
+    private fun calcolaVincitore(): String {
 
-        // Se non ci sono nomi, non disegnare nulla
-        if (nomi.isEmpty()) return
+        val nomi = ruota.nomi // lista attuale nomi
 
-        // Calcolo del centro della ruota
-        val cx = width / 2f
-        val cy = height / 2f
+        val step = 360f / nomi.size // grandezza di ogni fetta
 
-        // Raggio della ruota
-        val r = min(cx, cy) - 20
+        val normalized = (360f - (angolo % 360f)) % 360f // normalizza angolo
 
-        // Angolo per ogni segmento
-        val step = 360f / nomi.size
+        val index = floor(normalized / step).toInt() // trova indice vincitore
 
-        // Ciclo su tutti i nomi
-        for (i in nomi.indices) {
+        return nomi[index] // ritorna il nome vincitore
+    }
 
-            // Colori alternati per i segmenti
-            paint.color = if (i % 2 == 0) Color.YELLOW else Color.CYAN
+    // funzione che crea effetto coriandoli
+    private fun showCoriandoli() {
 
-            // Angolo di partenza del segmento
-            val start = i * step
+        // prende tutta la schermata
+        val root = window.decorView.findViewById<FrameLayout>(android.R.id.content)
 
-            // Disegno dello spicchio
-            canvas.drawArc(
-                cx - r, // sinistra
-                cy - r, // sopra
-                cx + r, // destra
-                cy + r, // sotto
-                start,  // inizio
-                step,   // ampiezza
-                true,   // chiude
-                paint   // colore
-            )
+        // crea 40 coriandoli
+        for (i in 0..40) {
 
+            val coriandolo = TextView(this) // singolo elemento grafico
 
-            // Calcolo posizione del testo
-            val angle = Math.toRadians((start + step / 2).toDouble())
-            val x = cx + (r / 1.5 * cos(angle)).toFloat()
-            val y = cy + (r / 1.5 * sin(angle)).toFloat()
+            coriandolo.text = "■" // forma del coriandolo
 
-            // Disegno del nome
-            canvas.drawText(nomi[i], x, y, textPaint)
+            coriandolo.textSize = (10..30).random().toFloat() // dimensione casuale
+
+            coriandolo.setTextColor(
+                Color.rgb(
+                    (0..255).random(),
+                    (0..255).random(),
+                    (0..255).random()
+                )
+            ) // colore casuale
+
+            coriandolo.x = (0..root.width).random().toFloat() // posizione X casuale
+
+            coriandolo.y = -100f // parte dall’alto
+
+            root.addView(coriandolo) // aggiunge a schermo
+
+            ObjectAnimator.ofFloat(
+                coriandolo,
+                "translationY",
+                0f,
+                root.height + 300f
+            ).apply {
+                duration = (1500..3000).random().toLong() // durata animazione
+                start() // avvia caduta
+            }
         }
     }
 }

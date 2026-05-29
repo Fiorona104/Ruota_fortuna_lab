@@ -1,77 +1,80 @@
-package com.example.ruota_fortuna
+package com.example.ruota_fortuna // definisce il nome del pacchetto (cartella logica del progetto Android)
 
-import android.content.Context   // Permette di accedere alle risorse del sistema Android
-import android.graphics.Canvas   // Usato per disegnare elementi grafici sullo schermo
-import android.graphics.Color    // Contiene i colori predefiniti e la gestione dei colori
-import android.graphics.Paint    // Serve per definire stile, colore e proprietà del disegno
-import android.util.AttributeSet // Permette di usare la View anche da XML
-import android.view.View         // Classe base per creare componenti grafici personalizzati
+import android.content.Context // serve per accedere a risorse del sistema Android (es. colori, file, ecc.)
+import android.graphics.Canvas // oggetto su cui disegniamo la ruota
+import android.graphics.Color // classe che contiene i colori
+import android.graphics.Paint // serve per definire stile, colore e caratteristiche del disegno
+import android.util.AttributeSet // permette di usare questa View anche da XML
+import android.view.View // classe base per creare elementi grafici personalizzati
 
+import kotlin.math.cos // funzione matematica per calcolare coordinate X su cerchio
+import kotlin.math.min // restituisce il valore più piccolo (usato per il raggio)
+import kotlin.math.sin // funzione matematica per calcolare coordinate Y su cerchio
 
-import kotlin.math.cos           // Calcola il coseno, per coordinate circolari
-import kotlin.math.min           // Restituisce il valore minimo, per il raggio della ruota
-import kotlin.math.sin           // Calcola il seno, per coordinate circolari
+// classe personalizzata che crea una ruota grafica
+class RuotaView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
-// Classe che disegna una ruota sullo schermo
-class RuotaView1(context: Context, attrs: AttributeSet?) : View(context, attrs) {
-
-    // Lista dei nomi da inserire nei segmenti della ruota
+    // lista dei nomi che verranno mostrati nei segmenti della ruota
     var nomi = mutableListOf("Luca", "Marco", "Giulia", "Sara", "Andrea", "Matteo")
 
-    // Paint principale per colorare i segmenti
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    // Paint usato per disegnare i settori della ruota
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG) // anti alias rende i bordi più lisci
 
-    // Paint per il testo dei nomi, nero, centrato e con dimensione 40
+    // Paint usato per scrivere il testo (nomi)
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
-        textSize = 40f
-        textAlign = Paint.Align.CENTER
+        color = Color.BLACK // colore del testo
+        textSize = 40f // dimensione del testo
+        textAlign = Paint.Align.CENTER // centra il testo rispetto al punto
     }
 
-    // Metodo principale che disegna la ruota
+    // metodo chiamato automaticamente ogni volta che la view deve essere disegnata
     override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+        super.onDraw(canvas) // chiama il metodo della classe madre
 
-        // Se non ci sono nomi, non disegnare nulla
+        // se la lista è vuota, non disegna nulla
         if (nomi.isEmpty()) return
 
-        // Calcolo del centro della ruota
-        val cx = width / 2f
-        val cy = height / 2f
+        // trova il centro della view (orizzontale e verticale)
+        val cx = width / 2f // centro X
+        val cy = height / 2f // centro Y
 
-        // Raggio della ruota, leggermente più piccolo della metà della dimensione minore
-        val r = min(cx, cy) - 20
+        // calcola il raggio della ruota (metà dello spazio disponibile)
+        val r = min(cx, cy) - 20 // -20 per lasciare margine
 
-        // Angolo per ogni segmento della ruota
+        // calcola quanto è grande ogni fetta della ruota in gradi
         val step = 360f / nomi.size
 
-        // Ciclo su tutti i nomi per disegnare i segmenti
+        // ciclo che disegna ogni segmento della ruota
         for (i in nomi.indices) {
 
-            // Colori alternati per i segmenti
+            // alterna colori tra giallo e azzurro
             paint.color = if (i % 2 == 0) Color.YELLOW else Color.CYAN
 
-            // Angolo di partenza del segmento
+            // calcola angolo di partenza del segmento
             val start = i * step
 
-            // Disegna l'arco (segmento della ruota)
+            // disegna il settore della ruota (tipo fetta di pizza)
             canvas.drawArc(
-                cx - r, // sinistra
-                cy - r, // sopra
-                cx + r, // destra
-                cy + r, // sotto
-                start,  // angolo iniziale
-                step,   // ampiezza dell'arco
-                true,   // "useCenter" -> chiude il segmento fino al centro
-                paint   // paint con colore
+                cx - r, // lato sinistro del cerchio
+                cy - r, // lato alto del cerchio
+                cx + r, // lato destro del cerchio
+                cy + r, // lato basso del cerchio
+                start,  // angolo iniziale della fetta
+                step,   // ampiezza della fetta
+                true,   // chiude il segmento verso il centro
+                paint   // stile del disegno
             )
 
-            // Calcolo della posizione del testo al centro del segmento
+            // calcola angolo centrale della fetta
             val angle = Math.toRadians((start + step / 2).toDouble())
-            val x = cx + (r / 1.5 * cos(angle)).toFloat() // coordinata X
-            val y = cy + (r / 1.5 * sin(angle)).toFloat() // coordinata Y
 
-            // Disegna il nome sul segmento
+            // calcola posizione X del testo dentro la fetta
+            val x = cx + (r / 1.5 * cos(angle)).toFloat()
+
+            // calcola posizione Y del testo dentro la fetta
+            val y = cy + (r / 1.5 * sin(angle)).toFloat()
+
+            // disegna il nome al centro della fetta
             canvas.drawText(nomi[i], x, y, textPaint)
         }
     }
